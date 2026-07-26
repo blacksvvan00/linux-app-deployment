@@ -1,0 +1,20 @@
+[Unit]
+Description=FastAPI Backend Service
+After=network.target postgresql.service
+
+[Service]
+User=blackswan
+WorkingDirectory=/opt/backend
+
+ExecStart=/opt/backend/venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8080
+
+Restart=always
+RestartSec=3
+
+Environment="DB_HOST=localhost"
+Environment="DB_NAME=app"
+Environment="DB_USER=app"
+Environment="DB_PASSWORD=password"
+
+[Install]
+WantedBy=multi-user.target
