@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>User Manager</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin:0;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #f5f5f7,
+        #e8e8ed
+    );
+
+    font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+
+
+.container {
+
+    width:600px;
+
+    background:
+    rgba(255,255,255,0.8);
+
+    backdrop-filter:
+    blur(20px);
+
+    border-radius:24px;
+
+    padding:30px;
+
+    box-shadow:
+    0 20px 50px
+    rgba(0,0,0,0.15);
+
+}
+
+
+
+h1 {
+
+    margin-top:0;
+
+    font-size:32px;
+
+}
+
+
+
+.stats {
+
+    color:#666;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.form {
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+
+
+input {
+
+    flex:1;
+
+    border:none;
+
+    background:#f2f2f7;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    font-size:16px;
+
+    outline:none;
+
+}
+
+
+
+button {
+
+
+    border:none;
+
+    padding:12px 18px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+}
+
+
+
+.add {
+
+    background:#007aff;
+
+    color:white;
+
+}
+
+
+
+.delete {
+
+    background:#ff3b30;
+
+    color:white;
+
+}
+
+
+
+button:hover {
+
+    opacity:0.85;
+
+}
+
+
+
+ul {
+
+    list-style:none;
+
+    padding:0;
+
+}
+
+
+
+.user {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    background:#fff;
+
+    padding:15px;
+
+    margin-top:12px;
+
+    border-radius:16px;
+
+    box-shadow:
+    0 5px 15px
+    rgba(0,0,0,0.08);
+
+}
+
+
+
+.name {
+
+    font-weight:600;
+
+}
+
+
+
+.id {
+
+    color:#888;
+
+    font-size:13px;
+
+}
+
+
+
+.notification {
+
+
+    margin-top:20px;
+
+    padding:12px;
+
+    border-radius:14px;
+
+    display:none;
+
+}
+
+
+
+.success {
+
+    display:block;
+
+    background:#d1f7d6;
+
+    color:#167c2a;
+
+}
+
+
+
+.error {
+
+    display:block;
+
+    background:#ffd7d7;
+
+    color:#b00020;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>
+👤 Users
+</h1>
+
+
+<div class="stats">
+
+Всего пользователей:
+<span id="count">0</span>
+
+</div>
+
+
+
+<div class="form">
+
+<input
+id="username"
+placeholder="Введите имя пользователя"
+/>
+
+
+<button
+class="add"
+onclick="addUser()">
+
+Добавить
+
+</button>
+
+
+</div>
+
+
+<div
+id="notification"
+class="notification">
+</div>
+
+
+
+<ul id="users">
+
+</ul>
+
+
+</div>
+
+
+
+
+<script>
+
+
+const API = "/api";
+
+
+
+function notify(message,type){
+
+
+const box =
+document.getElementById(
+"notification"
+);
+
+
+box.className =
+"notification " + type;
+
+
+box.innerText =
+message;
+
+
+setTimeout(()=>{
+
+box.className =
+"notification";
+
+},3000);
+
+
+}
+
+
+
+
+
+async function loadUsers(){
+
+
+try{
+
+
+const response =
+await fetch(
+`${API}/users`
+);
+
+
+
+const users =
+await response.json();
+
+
+
+const list =
+document.getElementById(
+"users"
+);
+
+
+
+list.innerHTML="";
+
+
+
+document.getElementById(
+"count"
+).innerText =
+users.length;
+
+
+
+users.forEach(user=>{
+
+
+const li =
+document.createElement(
+"li"
+);
+
+
+
+li.className =
+"user";
+
+
+
+li.innerHTML = `
+
+
+<div>
+
+<div class="name">
+
+${user.name}
+
+</div>
+
+
+<div class="id">
+
+ID: ${user.id}
+
+</div>
+
+
+</div>
+
+
+
+<button
+class="delete"
+onclick="
+deleteUser(${user.id})
+">
+
+Удалить
+
+</button>
+
+
+`;
+
+
+
+list.appendChild(li);
+
+
+});
+
+
+
+}
+
+catch(e){
+
+notify(
+"Ошибка загрузки пользователей",
+"error"
+);
+
+}
+
+
+}
+
+
+
+
+
+async function addUser(){
+
+
+const input =
+document.getElementById(
+"username"
+);
+
+
+
+const name =
+input.value.trim();
+
+
+
+if(!name){
+
+notify(
+"Введите имя",
+"error"
+);
+
+return;
+
+}
+
+
+
+const response =
+await fetch(
+
+`${API}/users?name=${name}`,
+
+{
+
+method:"POST"
+
+}
+
+);
+
+
+
+if(response.ok){
+
+
+notify(
+`Пользователь ${name} создан`,
+"success"
+);
+
+
+input.value="";
+
+
+loadUsers();
+
+
+}
+
+else{
+
+
+notify(
+"Ошибка создания",
+"error"
+);
+
+
+}
+
+
+}
+
+
+
+
+
+async function deleteUser(id){
+
+
+const response =
+await fetch(
+
+`${API}/users/${id}`,
+
+{
+
+method:"DELETE"
+
+}
+
+);
+
+
+
+if(response.ok){
+
+
+notify(
+"Пользователь удалён",
+"success"
+);
+
+
+loadUsers();
+
+
+}
+
+else{
+
+
+notify(
+"Ошибка удаления",
+"error"
+);
+
+
+}
+
+
+}
+
+
+
+loadUsers();
+
+
+
+</script>
+
+
+
+</body>
+
+</html>
