@@ -118,7 +118,14 @@ ss -tulpn
 
 ```
 curl localhost/nginx-health
-curl localhost/health
+curl localhost/api/health
 curl localhost/api/users
 curl localhost
+```
+
+Прямая проверка Backendd в обход Nginx
+
+```
+ocurl localhost:8080/health
+curl localhost:8080/users
 ```
